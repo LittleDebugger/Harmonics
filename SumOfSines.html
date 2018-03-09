@@ -1,0 +1,58 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Sum of Sines</title>
+    <script src="Scripts/com/littleDebugger/namespacer.js"></script>
+    <script src="Scripts/com/littleDebugger/daw/audioContext.js"></script>
+    <script src="Scripts/com/littleDebugger/daw/volumeWarning.js"></script>
+    <script src="Scripts/com/littleDebugger/daw/dsp/generator/sineWave.js"></script>
+</head>
+
+<body>
+    <div id="controlsContainer">
+        <div id="gains" style="display:inline-block">
+            <div>
+                <span>Gain 1:<input id="gain1" type="range" min="0" max="0.99" step="0.01" value="0.8" /></span>
+                <span><label id="gain1label"></label></span>
+            </div>
+            <div>
+                <span>Gain 2:<input id="gain2" type="range" min="0" max="0.99" step="0.01" value="0.7" /></span>
+                <span><label id="gain2label"></label></span>
+            </div>
+            <div>
+                <span>Gain 3:<input id="gain3" type="range" min="0" max="0.99" step="0.01" value="0.5" /></span>
+                <span><label id="gain3label"></label></span>
+            </div>
+        </div>
+        <div id="freqs" style="display:inline-block; padding-left:20px">
+            <div>
+                <span>Frequency 1:<input id="frequency1" type="range" min="2" max="100" step="1" value="3"></span>
+                <span><label id="frequency1label"></label></span>
+            </div>
+            <div>
+                <span>Frequency 2:<input id="frequency2" type="range" min="3" max="100" step="1" value="5"></span>
+                <span><label id="frequency2label"></label></span>
+            </div>
+            <div>
+                <span>Frequency 3:<input id="frequency3" type="range" min="4" max="100" step="1" value="10"></span>
+                <span><label id="frequency3label"></label></span>
+            </div>
+        </div>
+        <div>
+            <input type="button" value="Start" id="start" />
+            <input type="button" value="Stop" id="stop" />
+            <input type="button" value="Preset1" id="preset1" />
+            <input type="button" value="Preset2" id="preset2" />
+            <input type="button" value="Preset3" id="preset3" />
+            <input type="button" value="Preset4" id="preset4" />
+        </div>
+    </div>
+    <canvas id="canvas" height="400" width="2000">
+        Browser does not support canvas
+    </canvas>
+    <script src="Scripts/sumOfSines.js"></script>
+</body>
+
+</html>
