@@ -78,8 +78,8 @@ if (audioCtx == null) {
 
         audioPlaying = true;
 
-        clearTimeout(interval);
-        redrawCanvas();
+        //clearTimeout(interval);
+        //redrawCanvas();
 
         var i = 0;
         scriptNode.onaudioprocess = function (audioProcessingEvent) {
@@ -94,7 +94,8 @@ if (audioCtx == null) {
                 }
             }
 
-            redrawCanvas();
+            // redrawCanvas();
+            populateAudioBuffer(oscillatorControls);
         };
 
         scriptNode.connect(audioCtx.destination);
@@ -201,7 +202,6 @@ var drawSummedWave = function (oscillatorControls, color) {
 // <oscillatorControls> Array of objects for each wave.
 // - objects have gain and frequency properties.
 var populateAudioBuffer = function (oscillatorControls) {
-    console.log("here");
     // So that the some of all sines can not be > 1 or < -1.
     var adjustedGain;
     for (var i = 0; i < bufferLength; i++) {
@@ -237,8 +237,6 @@ var redrawCanvas = function () {
     }
 
     drawSummedWave(oscillatorControls, "black");
-    populateAudioBuffer(oscillatorControls);
-
 };
 
 // Update the canvas 8 times per second. Each redraw gets the value from the gain range control.
