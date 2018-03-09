@@ -7,29 +7,40 @@ var volumeWarning = com.littleDebugger.daw.volumeWarning();
 
 var colors = ['blue', 'red', 'green', 'cyan', 'magenta', 'aqua', 'brown', 'grey', 'orange', 'purple']
 var numberOfOscillators = 10;
+var gainAdjustmentForNumberOfOscillators = numberOfOscillators / 3;
 
 // Controls.
 var canvas = document.getElementById("canvas");
 var ctx = canvas.getContext("2d");
 
-var details = [];
+var fundimental = document.getElementById('frequency1');
+
+var oscillatorControls = [];
 for (var i = 1; i <= numberOfOscillators; i++) {
-    details.push({
+    oscillatorControls.push({
         gain: document.getElementById('gain' + i),
         gainLabel: document.getElementById('gain' + i + 'label'),
-        frequency: document.getElementById('frequency' + i),
-        frequencyLabel: document.getElementById('frequency' + i + 'label')
+        frequencyLabel: document.getElementById('frequency' + i + 'label'),
+        frequencyControl: document.getElementById('frequency' + i),
+        frequency: function(){
+            if (this.frequencyControl == fundimental){
+                return fundimental.value;
+            }
+
+            return this.frequencyControl.value * fundimental.value;
+        }
     });
 }
+
 
 var start = document.getElementById('start');
 var stop = document.getElementById('stop');
 
 var audioCtx = com.littleDebugger.daw.getAudioContext();
 var sampleRate;
-var numberOfWaves = 3;
-var windowsPerSecond = 42;
+var windowsPerSecond;
 var noneCroppingHeight = canvas.height - 2;
+var bufferLength = 8192;
 
 // Set the grid colors.
 var axisColor = "black";
@@ -44,12 +55,21 @@ if (audioCtx == null) {
     start.onclick = function () {
         alert("Web Audio API is not available. Please use a supported browser.");
     };
+
+    windowsPerSecond = (sampleRate / canvas.width) * 2;
 } else {
     // Setup when Web Audio API is available.
     sampleRate = audioCtx.sampleRate;
-    var scriptNode = audioCtx.createScriptProcessor(8192, 1, 1);
-    start.onclick = function () {
+    
+    oscillatorControls.forEach(function (oscillatorControl) {
+        oscillatorControl.sineWaveGeneratorAudio = sineWaveGenerator(0, sampleRate);
+    });
 
+    windowsPerSecond = (sampleRate / canvas.width) * 2;
+
+    var scriptNode;
+    start.onclick = function () {
+        scriptNode = audioCtx.createScriptProcessor(bufferLength, 1, 1);
         if (audioPlaying) {
             return;
         }
@@ -59,7 +79,6 @@ if (audioCtx == null) {
         audioPlaying = true;
 
         clearTimeout(interval);
-        scriptNode = audioCtx.createScriptProcessor(4096, 1, 1);
         redrawCanvas();
 
         var i = 0;
@@ -79,7 +98,6 @@ if (audioCtx == null) {
         };
 
         scriptNode.connect(audioCtx.destination);
-        console.log('Audio playing.');
     };
 
     // Stop audio button click event.
@@ -97,11 +115,8 @@ if (audioCtx == null) {
     };
 }
 
-var bufferLength = Math.ceil(sampleRate / windowsPerSecond);
-canvas.width = bufferLength;
+canvas.width = 1000;
 var buffer = [bufferLength];
-
-canvas.width = bufferLength;
 
 // Draw a horizonal line of the canvas
 // <y> The point on the Y-axis where the line should be draw.
@@ -132,16 +147,16 @@ var drawWave = function (waveOffset, gainValue, frequency, gainLabel, frequencyL
     // Label for the gain.
     gainLabel.innerHTML = (gainValue * 100).toFixed(0) + "%";
     // Label for the frequency.
-    frequencyLabel.innerHTML = (frequency * windowsPerSecond).toFixed(0) + "Hz";
+    frequencyLabel.innerHTML = 'x' + (frequency / fundimental.value).toFixed(0);
 
     var sineWaveGeneratorInstance = sineWaveGenerator(waveOffset, sampleRate);
 
     ctx.beginPath();
     ctx.strokeStyle = color;
     // 
-    var adjustedGain = gainValue / numberOfWaves;
+    var adjustedGain = gainValue / gainAdjustmentForNumberOfOscillators;
     for (var i = 0; i < canvas.width + 1; i++) {
-        var amplitude = sineWaveGeneratorInstance.getSample(frequency * windowsPerSecond);
+        var amplitude = sineWaveGeneratorInstance.getSample((frequency / fundimental.value) * windowsPerSecond);
         var amplitudeWithGain = amplitude * adjustedGain;
 
         ctx.lineTo(i, canvas.height - ((amplitudeWithGain * noneCroppingHeight / 2) + (canvas.height / 2)));
@@ -152,14 +167,13 @@ var drawWave = function (waveOffset, gainValue, frequency, gainLabel, frequencyL
 };
 
 // Draw the summed wave.
-// <waveControls> Array of objects for each wave.
+// <oscillatorControls> Array of objects for each wave.
 // - objects have gain and frequency properties.
-var drawSummedWave = function (waveControls, color) {
+var drawSummedWave = function (oscillatorControls, color) {
     ctx.strokeStyle = color;
 
-    // TODO do not create a new instance each time.
-    waveControls.forEach(function (waveControl) {
-        waveControl.sineWaveGenerator = sineWaveGenerator(0, sampleRate);
+    oscillatorControls.forEach(function (oscillatorControl) {
+        oscillatorControl.sineWaveGenerator = sineWaveGenerator(0, sampleRate);
     });
 
     ctx.beginPath();
@@ -169,12 +183,10 @@ var drawSummedWave = function (waveControls, color) {
     for (var i = 0; i < canvas.width + 1; i++) {
         var amplitude = 0;
 
-        waveControls.forEach(function (waveControl) {
-            adjustedGain = (waveControl.gain.value / numberOfWaves);
-            amplitude += (waveControl.sineWaveGenerator.getSample(waveControl.frequency.value * windowsPerSecond) * adjustedGain);
+        oscillatorControls.forEach(function (oscillatorControl) {
+            adjustedGain = oscillatorControl.gain.value / gainAdjustmentForNumberOfOscillators;
+            amplitude += (oscillatorControl.sineWaveGenerator.getSample((oscillatorControl.frequency() / fundimental.value) * windowsPerSecond) * adjustedGain);
         });
-
-        buffer[i] = amplitude;
 
         ctx.lineTo(i, canvas.height - ((amplitude * noneCroppingHeight / 2) + (canvas.height / 2)));
     }
@@ -185,6 +197,24 @@ var drawSummedWave = function (waveControls, color) {
     ctx.closePath();
 };
 
+// Populate audio buffer.
+// <oscillatorControls> Array of objects for each wave.
+// - objects have gain and frequency properties.
+var populateAudioBuffer = function (oscillatorControls) {
+    console.log("here");
+    // So that the some of all sines can not be > 1 or < -1.
+    var adjustedGain;
+    for (var i = 0; i < bufferLength; i++) {
+        var amplitude = 0;
+
+        oscillatorControls.forEach(function (oscillatorControl) {
+            adjustedGain = (oscillatorControl.gain.value / numberOfOscillators);
+            amplitude += (oscillatorControl.sineWaveGeneratorAudio.getSample(oscillatorControl.frequency() * 50) * adjustedGain);
+        });
+
+        buffer[i] = amplitude;
+    }
+};
 
 var redrawCanvas = function () {
     // Clear the canvas.
@@ -203,10 +233,11 @@ var redrawCanvas = function () {
     drawVirticalLine(canvas.width / 2, divideColor);
 
     for (var i = 0; i < numberOfOscillators; i++) {
-        drawWave(0, details[i].gain.value, details[i].frequency.value, details[i].gainLabel, details[i].frequencyLabel, colors[i]);
+        drawWave(0, oscillatorControls[i].gain.value, oscillatorControls[i].frequency(), oscillatorControls[i].gainLabel, oscillatorControls[i].frequencyLabel, colors[i]);
     }
 
-    drawSummedWave(details, "black");
+    drawSummedWave(oscillatorControls, "black");
+    populateAudioBuffer(oscillatorControls);
 
 };
 
