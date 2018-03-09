@@ -5,21 +5,22 @@ var sineWaveGenerator = com.littleDebugger.daw.dsp.generator.sineWave;
 
 var volumeWarning = com.littleDebugger.daw.volumeWarning();
 
+var colors = ['blue', 'red', 'green', 'cyan', 'magenta', 'aqua', 'brown', 'grey', 'orange']
+var numberOfOscillators = 3;
+
 // Controls.
 var canvas = document.getElementById("canvas");
 var ctx = canvas.getContext("2d");
-var gain1 = document.getElementById('gain1');
-var gain2 = document.getElementById('gain2');
-var gain3 = document.getElementById('gain3');
-var gain1label = document.getElementById('gain1label');
-var gain2label = document.getElementById('gain2label');
-var gain3label = document.getElementById('gain3label');
-var frequency1 = document.getElementById('frequency1');
-var frequency2 = document.getElementById('frequency2');
-var frequency3 = document.getElementById('frequency3');
-var frequency1label = document.getElementById('frequency1label');
-var frequency2label = document.getElementById('frequency2label');
-var frequency3label = document.getElementById('frequency3label');
+
+var details = [];
+for (var i = 1; i <= numberOfOscillators; i++) {
+    details.push({
+        gain: document.getElementById('gain' + i),
+        gainLabel: document.getElementById('gain' + i + 'label'),
+        frequency: document.getElementById('frequency' + i),
+        frequencyLabel: document.getElementById('frequency' + i + 'label')
+    });
+}
 
 var start = document.getElementById('start');
 var stop = document.getElementById('stop');
@@ -30,7 +31,7 @@ var numberOfWaves = 3;
 var windowsPerSecond = 42;
 var noneCroppingHeight = canvas.height - 2;
 
-// Set the grid colours.
+// Set the grid colors.
 var axisColor = "black";
 var divideColor = "grey";
 
@@ -132,11 +133,11 @@ var drawWave = function (waveOffset, gainValue, frequency, gainLabel, frequencyL
     gainLabel.innerHTML = (gainValue * 100).toFixed(0) + "%";
     // Label for the frequency.
     frequencyLabel.innerHTML = (frequency * windowsPerSecond).toFixed(0) + "Hz";
-    ctx.strokeStyle = color;
+
     var sineWaveGeneratorInstance = sineWaveGenerator(waveOffset, sampleRate);
 
     ctx.beginPath();
-
+    ctx.strokeStyle = color;
     // 
     var adjustedGain = gainValue / numberOfWaves;
     for (var i = 0; i < canvas.width + 1; i++) {
@@ -147,6 +148,7 @@ var drawWave = function (waveOffset, gainValue, frequency, gainLabel, frequencyL
     }
 
     ctx.stroke();
+    ctx.closePath();
 };
 
 // Draw the summed wave.
@@ -168,8 +170,8 @@ var drawSummedWave = function (waveControls, color) {
         var amplitude = 0;
 
         waveControls.forEach(function (waveControl) {
-            adjustedGain = (waveControl.gain / numberOfWaves);
-            amplitude += (waveControl.sineWaveGenerator.getSample(waveControl.frequency * windowsPerSecond) * adjustedGain);
+            adjustedGain = (waveControl.gain.value / numberOfWaves);
+            amplitude += (waveControl.sineWaveGenerator.getSample(waveControl.frequency.value * windowsPerSecond) * adjustedGain);
         });
 
         buffer[i] = amplitude;
@@ -180,6 +182,7 @@ var drawSummedWave = function (waveControls, color) {
     ctx.lineWidth = 4;
     ctx.stroke();
     ctx.lineWidth = 1;
+    ctx.closePath();
 };
 
 
@@ -199,19 +202,12 @@ var redrawCanvas = function () {
     drawVirticalLine(canvas.width / 8 * 7, divideColor);
     drawVirticalLine(canvas.width / 2, divideColor);
 
-    drawWave(0, gain1.value, frequency1.value, gain1label, frequency1label, 'blue');
-    drawWave(0, gain2.value, frequency2.value, gain2label, frequency2label, 'red');
-    drawWave(0, gain3.value, frequency3.value, gain3label, frequency3label, 'green');
-    drawSummedWave([{
-        gain: gain1.value,
-        frequency: frequency1.value
-    }, {
-        gain: gain2.value,
-        frequency: frequency2.value
-    }, {
-        gain: gain3.value,
-        frequency: frequency3.value
-    }], "black");
+    for (var i = 0; i < numberOfOscillators; i++) {
+        drawWave(0, details[i].gain.value, details[i].frequency.value, details[i].gainLabel, details[i].frequencyLabel, colors[i]);
+    }
+
+    drawSummedWave(details, "black");
+
 };
 
 // Update the canvas 8 times per second. Each redraw gets the value from the gain range control.
