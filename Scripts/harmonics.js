@@ -24,43 +24,6 @@ var frequency3label = document.getElementById('frequency3label');
 var start = document.getElementById('start');
 var stop = document.getElementById('stop');
 
-// Presets.
-document.getElementById('preset1').onclick = function () {
-    gain1.value = 1;
-    gain2.value = 0.6;
-    gain3.value = 0.3;
-    frequency1.value = 10;
-    frequency2.value = 10;
-    frequency3.value = 10;
-};
-
-document.getElementById('preset2').onclick = function () {
-    gain1.value = 0;
-    gain2.value = 1;
-    gain3.value = 1;
-    frequency1.value = 3;
-    frequency2.value = 74;
-    frequency3.value = 69;
-};
-
-document.getElementById('preset3').onclick = function () {
-    gain1.value = 0;
-    gain2.value = 1;
-    gain3.value = 1;
-    frequency1.value = 3;
-    frequency2.value = 85;
-    frequency3.value = 84;
-};
-
-document.getElementById('preset4').onclick = function () {
-    gain1.value = 0;
-    gain2.value = 0.21;
-    gain3.value = 0;
-    frequency1.value = 3;
-    frequency2.value = 41;
-    frequency3.value = 4;
-};
-
 var audioCtx = com.littleDebugger.daw.getAudioContext();
 var sampleRate;
 var numberOfWaves = 3;
