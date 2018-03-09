@@ -5,8 +5,8 @@ var sineWaveGenerator = com.littleDebugger.daw.dsp.generator.sineWave;
 
 var volumeWarning = com.littleDebugger.daw.volumeWarning();
 
-var colors = ['blue', 'red', 'green', 'cyan', 'magenta', 'aqua', 'brown', 'grey', 'orange']
-var numberOfOscillators = 3;
+var colors = ['blue', 'red', 'green', 'cyan', 'magenta', 'aqua', 'brown', 'grey', 'orange', 'purple']
+var numberOfOscillators = 10;
 
 // Controls.
 var canvas = document.getElementById("canvas");
