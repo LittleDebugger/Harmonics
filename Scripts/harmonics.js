@@ -22,8 +22,8 @@ for (var i = 1; i <= numberOfOscillators; i++) {
         gainLabel: document.getElementById('gain' + i + 'label'),
         frequencyLabel: document.getElementById('frequency' + i + 'label'),
         frequencyControl: document.getElementById('frequency' + i),
-        frequency: function(){
-            if (this.frequencyControl == fundimental){
+        frequency: function () {
+            if (this.frequencyControl == fundimental) {
                 return fundimental.value;
             }
 
@@ -60,7 +60,7 @@ if (audioCtx == null) {
 } else {
     // Setup when Web Audio API is available.
     sampleRate = audioCtx.sampleRate;
-    
+
     oscillatorControls.forEach(function (oscillatorControl) {
         oscillatorControl.sineWaveGeneratorAudio = sineWaveGenerator(0, sampleRate);
     });
